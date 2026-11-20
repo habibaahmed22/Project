@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Course Registration and Academic Advisor</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+  <script src="ui.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap masthead-inner">
+      <div class="identity">
+        <span class="mark" aria-hidden="true"><svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5zM6 12v5c3 3 9 3 12 0v-5M22 9v7"/></svg></span>
+        <div><strong>Academic Advisor</strong><small>Smart Course Registration</small></div>
+      </div>
+      <div class="session"><span id="session-name">Amity University Dubai</span><button id="sign-out" class="quiet" hidden>Sign out</button></div>
+    </div>
+  </header>
+  <nav id="nav" aria-label="Student workspace" hidden><div class="wrap nav-inner">
+    <button data-view="profile">Student profile</button><button data-view="records">Academic record</button>
+    <button data-view="catalogue">Course catalogue</button><button data-view="planner">Registration planner</button>
+    <button data-view="advisor">Academic advising</button>
+  </div></nav>
+  <main class="wrap">
+    <header class="page-heading">
+      <div class="programme-line">Bachelor of Science in Computer Science</div>
+      <h1 id="page-title">Student registration</h1>
+      <p id="page-intro">Create an account or sign in to continue your course plan.</p>
+    </header>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+
+    <section id="auth" aria-label="Student access" class="columns">
+      <div class="panel">
+        <div class="segmented"><button type="button" id="new-tab" aria-pressed="true">New student</button><button type="button" id="login-tab" aria-pressed="false">Returning student</button></div>
+        <form id="signup" class="stack">
+          <h2>Create a student account</h2>
+          <label>Full name<input id="reg-full-name" required autocomplete="off" placeholder="e.g. Noor Salem"></label>
+          <label>AUD ID<input id="reg-aud-id" required type="password" autocomplete="new-password"></label>
+          <label>Current semester<select id="reg-semester-select" required></select></label>
+          <label id="reg-concentration-group" hidden>Concentration<select id="reg-concentration-select"></select></label>
+          <label id="initial-cgpa-group">Academic record<select id="initial-cgpa"><option value="none">No CGPA yet</option><option value="graded">I have a graded term</option></select></label>
+          <button class="primary" type="submit">Create account</button>
+        </form>
+        <form id="login" class="stack" hidden>
+          <h2>Sign in to your account</h2>
+          <label>Full name<input id="login-full-name" required autocomplete="username"></label>
+          <label>AUD ID<input id="login-aud-id" required type="password" autocomplete="current-password"></label>
+          <button class="primary">Sign in</button>
+        </form>
+      </div>
+      <aside class="panel demo-panel"><h2>Try a sample profile</h2><p>Open a sample student workspace.</p>
+        <div id="demo-list"></div><button class="text-button" id="reset-demo">Reset demo profiles</button>
+      </aside>
+    </section>
+
+    <section id="profile" hidden aria-label="Student profile">
+      <div id="profile-metrics" class="metrics"></div>
+      <div class="columns">
+        <form class="panel stack" id="profile-settings"><h2>Academic settings</h2>
+          <label>Current semester<select id="profile-semester-select"></select></label>
+          <label id="profile-concentration-group" hidden>Concentration<select id="profile-concentration-select"></select></label>
+          <label>Regular credit limit<input id="profile-regular-limit" type="number" min="1" max="30" step="1" required></label>
+          <label class="check"><input type="checkbox" id="prior-math"> I hold prior credit for MATH 125</label>
+          <div class="actions"><button class="primary">Save settings</button><button type="button" id="advance">Advance semester</button></div>
+        </form>
+        <aside class="panel"><h2>Registration standing</h2><div id="profile-standing"></div>
+          <button data-view="records">Review academic record</button>
+        </aside>
+      </div>
+    </section>
+
+    <section id="records" hidden aria-label="Academic record">
+      <div id="record-standing"></div>
+      <form class="panel stack" id="term-form">
+        <h2>Term results</h2>
+        <div class="field-grid"><label>Academic term<select id="record-term"></select></label>
+          <label>How would you like to enter your CGPA?<select id="cgpa-source">
+            <option value="manual">Enter my official CGPA</option><option value="calculated">Calculate from my grades</option>
+          </select></label></div>
+        <label id="official-cgpa-field">Official cumulative GPA<input id="record-cgpa" type="number" min="0" max="4" step="0.01" placeholder="0.00–4.00"></label>
+        <label class="check"><input type="checkbox" id="ungraded"><span id="ungraded-label">No CGPA yet</span></label>
+        <label class="check" id="first-graded-group" hidden><input type="checkbox" id="first-graded">This was my first graded term</label>
+        <div class="section-line"><h3>Courses in this term</h3><button type="button" id="select-term">Select all in this term</button></div>
+        <p class="hint" id="record-help"></p>
+        <div id="record-courses"></div>
+        <div class="field-action"><label>Other coursework<select id="extra-course"></select></label><button id="add-record-course" type="button">Include course</button></div>
+        <div id="calculation" class="callout" hidden><h3>Calculated CGPA</h3><output id="cgpa-preview" aria-live="polite"></output>
+          <p>Include every graded attempt through this term. Each course is weighted by its credits.</p></div>
+        <details class="grade-guide"><summary>View the grading scale</summary>
+          <table><thead><tr><th>Grade</th><th>Marks</th><th>Points</th><th>Meaning</th></tr></thead><tbody id="grade-scale"></tbody></table>
+          <p class="hint">F counts as 0.00 in the calculator. Grades with a dash in the points column are excluded from the CGPA.</p>
+        </details>
+        <div class="actions"><button class="primary" id="save-term">Save term result</button><button type="button" id="save-draft">Save draft</button></div>
+      </form>
+      <div class="panel"><h2>Term history</h2><div id="history"></div></div>
+    </section>
+
+    <section id="catalogue" hidden aria-label="Course catalogue">
+      <div class="panel filters">
+        <label>Course search<input type="search" id="catalogue-search" placeholder="Search by course code or title"></label>
+        <label>Semester<select id="catalogue-semester-filter"></select></label>
+        <label>Eligibility<select id="catalogue-status"><option value="">All courses</option><option value="available">Available to add</option><option value="blocked">Blocked</option><option value="planned">In plan</option><option value="completed">Completed</option></select></label>
+      </div>
+      <p id="catalogue-count" aria-live="polite"></p><div id="catalogue-list" class="course-grid"></div>
+    </section>
+
+    <section id="planner" hidden aria-label="Registration planner">
+      <div class="metrics" id="plan-metrics"></div>
+      <div class="panel stack"><h2>Add a course</h2>
+        <div class="field-action"><label>Course<select id="planner-course"></select></label><button id="planner-add" class="primary">Add to plan</button></div>
+        <div id="planner-decision" aria-live="polite"></div>
+      </div>
+      <div class="panel"><div class="section-line"><h2>Planned courses</h2><button id="clear-plan">Clear plan</button></div><div id="plan-issues"></div><div id="planned-list"></div>
+        <div class="actions"><button id="save-plan" class="primary">Save plan</button></div>
+      </div>
+    </section>
+
+    <section id="advisor" hidden aria-label="Academic advising">
+      <div class="panel"><h2>Recommended courses</h2><p class="hint">Priority goes to your semester and courses that fulfil later prerequisites.</p><div id="recommendations"></div></div>
+      <div class="panel stack"><h2>Check a course</h2><label>Course<select id="advisor-course"></select></label><div id="advisor-decision"></div><div><button id="advisor-add">Add to plan</button></div></div>
+      <div class="columns">
+        <form class="panel stack" id="feedback"><h2 id="feedback-heading">Course and advising feedback</h2>
+          <p class="hint" id="feedback-help"></p>
+          <div id="feedback-fields" class="stack">
+            <label>Course<select id="feedback-course" required></select></label>
+            <fieldset class="rating-group"><legend>Course Content &amp; Structure</legend><div class="stack" id="content-ratings"></div></fieldset>
+            <fieldset class="rating-group"><legend>Instructor Effectiveness</legend><div class="stack" id="instructor-ratings"></div></fieldset>
+            <label>How manageable was the workload?<select id="workload" required><option value="">Choose a rating</option><option value="1">1 · Very heavy</option><option value="2">2 · Heavy</option><option value="3">3 · Manageable</option><option value="4">4 · Light</option><option value="5">5 · Very light</option></select></label>
+            <fieldset><legend>What difficulties did you face?</legend><div id="difficulties"></div></fieldset>
+            <label>Did the advice help you choose courses?<select id="useful" required><option value="">Choose an answer</option><option>Yes</option><option>Partly</option><option>No</option></select></label>
+            <div class="stack" id="additional-feedback"></div>
+            <label>What would you change to improve this course or the advising experience?<textarea id="suggestions" rows="3" required></textarea></label>
+            <div class="actions"><button class="primary" id="save-feedback">Save feedback</button>
+              <button type="button" id="cancel-feedback-edit" hidden>Cancel edit</button></div>
+          </div>
+        </form>
+        <aside class="panel"><h2>My feedback</h2><div id="feedback-list"></div></aside>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-inner"><span>Amity University Dubai · CSCI 310 class demo</span><a href="Bachelor%20of%20Science%20in%20Computer%20Science%20-%20%20Program%20Structure%20and%20Program%20Delivery.pdf">Programme structure &amp; delivery (PDF)</a></div></footer>
+</body>
+</html>
